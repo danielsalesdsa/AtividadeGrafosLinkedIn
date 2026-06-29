@@ -1,38 +1,22 @@
-// Pacote modelo: estrutura principal do grafo (código do professor + Dijkstra)
 package modelo;
 
 import java.util.*;
 
-/**
- * Classe principal que representa o GRAFO da rede social.
- * Gerencia vértices, arestas e todos os algoritmos das aulas.
- * A maior parte veio do professor; o bloco do Dijkstra foi adicionado para o projeto.
- */
+
 public class Grafo {
 
-    // Lista de todas as arestas (conexões) do grafo
     private final List<Aresta> arestas;
-    // Lista de todos os vértices (perfis) do grafo
     private final List<Vertice> vertices;
-    // Indica se o grafo é direcionado (arestas têm direção)
     private boolean eDirigido;
-    // Ordem = quantidade de vértices
     private int ordem;
-    // Tamanho = quantidade de arestas
     private int tamanho;
-    // Indica se as arestas possuem peso (afinidade)
     private final boolean ePonderado;
 
-    /** Construtor padrão: grafo não-direcionado e não-ponderado. */
     public Grafo() {
         this(false, false);
     }
 
-    /**
-     * Construtor parametrizado.
-     * @param eDirigido true se as arestas têm direção
-     * @param ePonderado true se as arestas têm peso (afinidade)
-     */
+
     public Grafo(boolean eDirigido, boolean ePonderado) {
         this.eDirigido = eDirigido;
         this.ePonderado = ePonderado;
@@ -40,86 +24,66 @@ public class Grafo {
         vertices = new ArrayList<>();
     }
 
-    /**
-     * Adiciona um ou mais vértices ao grafo.
-     * Aceita quantos nomes forem passados (varargs).
-     */
+    
     public void adicionaVertices(String... nomes) {
         for (String nome : nomes) {
-            vertices.add(new Vertice(nome)); // cria o vértice e adiciona na lista
-            ordem++; // incrementa a contagem de vértices
+            vertices.add(new Vertice(nome)); 
+            ordem++; 
         }
     }
 
-    /** Adiciona aresta sem nome e sem peso entre v1 e v2. */
     public void addAresta(String v1, String v2) {
         arestas.add(criaAresta("", v1, v2, null));
     }
 
-    /** Adiciona aresta com peso entre v1 e v2 (usado no projeto). */
     public void addAresta(String v1, String v2, int peso) {
         arestas.add(criaAresta("", v1, v2, peso));
     }
 
-    /** Adiciona aresta com nome, sem peso. */
     public void addAresta(String nome, String v1, String v2) {
         arestas.add(criaAresta(nome, v1, v2, null));
     }
 
-    /** Adiciona aresta com nome e peso. */
     public void addAresta(String nome, String v1, String v2, int peso) {
         arestas.add(criaAresta(nome, v1, v2, peso));
     }
 
-    /**
-     * Método interno que cria a aresta e atualiza graus e adjacências.
-     * Centraliza a lógica de adicionar conexões.
-     */
+
     private Aresta criaAresta(String nomeAresta, String nomeVertice1, String nomeVertice2, Integer peso) {
-        // Busca os vértices pelo nome; lança exceção se não existirem
         Vertice v1 = encontraVertice(nomeVertice1).orElseThrow(
                 () -> new IllegalArgumentException("Vertice " + nomeVertice1 + " não encontrado."));
         Vertice v2 = encontraVertice(nomeVertice2).orElseThrow(
                 () -> new IllegalArgumentException("Vertice " + nomeVertice2 + " não encontrado."));
-        // Se o grafo foi criado como não-direcionado, verifica se precisa virar direcionado
         if (!eDirigido) {
             infereSeGrafoEDirecionado(v1, v2);
         }
-        aumentaGrauDosVertices(v1, v2); // atualiza graus
-        resolveAdjacencias(v1, v2);       // atualiza listas de vizinhos
-        tamanho++;                        // incrementa contagem de arestas
+        aumentaGrauDosVertices(v1, v2); 
+        resolveAdjacencias(v1, v2);       
+        tamanho++;                        
         return new Aresta(nomeAresta, v1, v2, peso);
     }
 
-    /**
-     * Atualiza as listas de adjacências dos dois vértices.
-     * Em grafos não-direcionados, a conexão vale nos dois sentidos.
-     */
+
     private void resolveAdjacencias(Vertice v1, Vertice v2) {
-        v1.adicionaAdjacencia(v2); // v1 envia para v2
-        v2.adicionaAdjacente(v1);  // v2 recebe de v1
+        v1.adicionaAdjacencia(v2); 
+        v2.adicionaAdjacente(v1);  
         if (!eDirigido) {
-            // Em grafo não-direcionado, a conexão é bidirecional
             v1.adicionaAdjacente(v2);
             v2.adicionaAdjacencia(v1);
         }
     }
 
-    /** Incrementa o grau correto conforme o grafo seja direcionado ou não. */
     private void aumentaGrauDosVertices(Vertice v1, Vertice v2) {
         if (eDirigido) {
-            v1.aumentaOutDegree(); // v1 é origem
-            v2.aumentaInDegree();  // v2 é destino
+            v1.aumentaOutDegree(); 
+            v2.aumentaInDegree();  
         } else {
-            v1.aumentaGrau(); // ambos ganham +1 grau
+            v1.aumentaGrau();
             v2.aumentaGrau();
         }
     }
 
-    /**
-     * Detecta situações que forçam o grafo a se tornar direcionado:
-     * self-loop ou aresta duplicada na direção oposta.
-     */
+
     private void infereSeGrafoEDirecionado(Vertice v1, Vertice v2) {
         if (eSelfLoop(v1, v2)) {
             reprocessamentoParaDigrafo();
@@ -133,25 +97,19 @@ public class Grafo {
         }
     }
 
-    /** Verifica se já existe aresta de v1 para v2. */
     private static boolean eArestaDuplicada(Vertice v1, Vertice v2, Aresta aresta) {
         return aresta.getVerticeOrigem().equals(v1) && aresta.getVerticeDestino().equals(v2);
     }
 
-    /** Verifica se já existe aresta de v2 para v1 (direção oposta). */
     private static boolean eViaMaoDupla(Vertice v1, Vertice v2, Aresta aresta) {
         return aresta.getVerticeOrigem().equals(v2) && aresta.getVerticeDestino().equals(v1);
     }
 
-    /** Verifica se v1 e v2 são o mesmo vértice (loop). */
     private static boolean eSelfLoop(Vertice v1, Vertice v2) {
         return v1.getNome().equals(v2.getNome());
     }
 
-    /**
-     * Busca um vértice pelo nome (case-insensitive).
-     * Retorna Optional vazio se não encontrar.
-     */
+
     public Optional<Vertice> encontraVertice(String nome) {
         for (Vertice vertice : vertices) {
             if (vertice.getNome().equalsIgnoreCase(nome)) {
@@ -161,112 +119,81 @@ public class Grafo {
         return Optional.empty();
     }
 
-    // ==================== CÓDIGO ADICIONADO PARA O PROJETO LINKEDIN ANALYZER ====================
 
-    /**
-     * Retorna a lista de vértices do grafo.
-     * Necessário para varrer toda a rede (ex: componentes conexos).
-     */
     public List<Vertice> getVertices() {
         return vertices;
     }
 
-    /**
-     * Algoritmo de DIJKSTRA - menor caminho ponderado.
-     * Encontra a rota de MENOR CUSTO (maior afinidade) entre origem e destino.
-     * Usado na Missão 4 do LinkedIn Analyzer.
-     */
+
     public ResultadoRota menorCaminhoPonderado(String origem, String destino) {
-        // Só funciona em grafos ponderados
         if (!ePonderado) {
             throw new IllegalStateException("O grafo precisa ser ponderado para calcular o menor caminho ponderado.");
         }
 
-        // Localiza os vértices de origem e destino
         Vertice verticeOrigem = encontraVertice(origem).orElseThrow(
                 () -> new IllegalArgumentException("Vertice " + origem + " não encontrado."));
         Vertice verticeDestino = encontraVertice(destino).orElseThrow(
                 () -> new IllegalArgumentException("Vertice " + destino + " não encontrado."));
 
-        // distancias: custo acumulado do menor caminho até cada vértice
         Map<Vertice, Integer> distancias = new HashMap<>();
-        // anteriores: de qual vértice viemos para reconstruir o caminho
         Map<Vertice, Vertice> anteriores = new HashMap<>();
-        // Fila de prioridade: sempre processa o vértice de menor custo primeiro
         PriorityQueue<Vertice> fila = new PriorityQueue<>(
                 Comparator.comparingInt(v -> distancias.getOrDefault(v, Integer.MAX_VALUE)));
 
-        // Inicializa todos com custo infinito (ainda não visitados)
         for (Vertice vertice : vertices) {
             distancias.put(vertice, Integer.MAX_VALUE);
         }
 
-        // A origem tem custo 0
         distancias.put(verticeOrigem, 0);
         fila.add(verticeOrigem);
 
-        // Loop principal do Dijkstra
         while (!fila.isEmpty()) {
-            // Remove o vértice de menor custo da fila
             Vertice atual = fila.poll();
             int custoAtual = distancias.get(atual);
 
-            // Entrada obsoleta na fila (já processamos com custo menor)
             if (custoAtual == Integer.MAX_VALUE) {
                 continue;
             }
 
-            // Se chegamos no destino, podemos parar
             if (atual.equals(verticeDestino)) {
                 break;
             }
 
-            // Relaxa cada vizinho do vértice atual
             for (Vertice vizinho : atual.getAdjacencias()) {
-                // Busca a aresta entre atual e vizinho
                 List<Aresta> arestasVizinhas = obtemArestasParaVizinho(atual, vizinho);
                 if (arestasVizinhas.isEmpty()) {
                     continue;
                 }
 
-                // Pega a aresta de menor peso (caso haja mais de uma)
                 Aresta melhorAresta = arestasVizinhas.stream()
                         .min(Comparator.comparing(Aresta::getPeso))
                         .orElseThrow();
                 int peso = melhorAresta.getPeso() != null ? melhorAresta.getPeso() : 0;
-                int novoCusto = custoAtual + peso; // custo para chegar ao vizinho
-
-                // Se encontramos um caminho mais barato até o vizinho, atualiza
+                int novoCusto = custoAtual + peso; 
                 if (novoCusto < distancias.get(vizinho)) {
                     distancias.put(vizinho, novoCusto);
-                    anteriores.put(vizinho, atual); // guarda de onde viemos
-                    fila.add(vizinho); // reenfileira com novo custo
+                    anteriores.put(vizinho, atual);
+                    fila.add(vizinho); 
                 }
             }
         }
 
-        // Se o destino ficou com custo infinito, não há caminho
         if (distancias.get(verticeDestino) == Integer.MAX_VALUE) {
             return ResultadoRota.inalcancavel();
         }
 
-        // Reconstrói o caminho de trás para frente usando o mapa anteriores
         List<String> caminho = new ArrayList<>();
         Vertice atual = verticeDestino;
         while (atual != null) {
-            caminho.add(0, atual.getNome()); // insere no início da lista
-            atual = anteriores.get(atual);   // volta um passo
+            caminho.add(0, atual.getNome()); 
+            atual = anteriores.get(atual);   
         }
 
         return new ResultadoRota(caminho, distancias.get(verticeDestino));
     }
 
-    // ==================== FIM DO CÓDIGO ADICIONADO PARA O PROJETO ====================
 
-    /**
-     * Converte o grafo para direcionado e recalcula graus e adjacências.
-     * Chamado quando self-loop ou aresta duplicada é detectada.
-     */
+
     private void reprocessamentoParaDigrafo() {
         eDirigido = true;
         System.out.println("Reprocessamento para digrafo necessário. O grafo agora é direcionado.");
@@ -274,7 +201,6 @@ public class Grafo {
         recalculaGrausEAdjacencias();
     }
 
-    /** Recalcula graus e adjacências de todas as arestas existentes. */
     private void recalculaGrausEAdjacencias() {
         arestas.forEach(aresta -> {
             Vertice origem = aresta.getVerticeOrigem();
@@ -284,7 +210,6 @@ public class Grafo {
         });
     }
 
-    /** Zera graus e limpa adjacências de todos os vértices. */
     private void limpezaGrausEAdjacencias() {
         vertices.forEach(vertice -> {
             vertice.resetaGraus();
@@ -292,7 +217,6 @@ public class Grafo {
         });
     }
 
-    /** Retorna string com os graus de todos os vértices. */
     public String exibeGrausDosVertices() {
         StringBuilder graus = new StringBuilder();
         for (Vertice vertice : vertices) {
@@ -301,7 +225,6 @@ public class Grafo {
         return graus.toString();
     }
 
-    /** Retorna string com as adjacências (saída) de cada vértice. */
     public String exibeAdjacencias() {
         StringBuilder adjacencias = new StringBuilder();
         for (Vertice vertice : vertices) {
@@ -310,7 +233,6 @@ public class Grafo {
         return adjacencias.toString();
     }
 
-    /** Retorna string com os adjacentes (entrada) de cada vértice. */
     public String exibeAdjacentes() {
         StringBuilder adjacencias = new StringBuilder();
         for (Vertice vertice : vertices) {
@@ -319,7 +241,6 @@ public class Grafo {
         return adjacencias.toString();
     }
 
-    /** Imprime a matriz de adjacência no console (1 = conectado, 0 = não). */
     public void exibeMatrizAdjacencia() {
         List<Vertice> verticesOrdenados = vertices.stream().sorted(Comparator.comparing(Vertice::getNome)).toList();
 
@@ -340,7 +261,6 @@ public class Grafo {
         System.out.println(matriz);
     }
 
-    /** Imprime a matriz de incidência no console. */
     public void exibeMatrizIncidencia() {
         List<Vertice> verticesOrdenados = vertices.stream().sorted(Comparator.comparing(Vertice::getNome)).toList();
         StringBuilder matriz = new StringBuilder("\nMatriz de Incidência\n\t");
@@ -368,14 +288,10 @@ public class Grafo {
         System.out.println(matriz);
     }
 
-    /**
-     * DFS ITERATIVO - Busca em Profundidade usando pilha.
-     * Explora o grafo indo o mais fundo possível antes de voltar (backtrack).
-     */
+
     public List<String> dfsIterativo(String origem, String destino) {
         Vertice verticeOrigem = encontraVertice(origem).orElseThrow(
                 () -> new IllegalArgumentException("Vertice " + origem + " não encontrado."));
-        // destino null = explora todo o grafo sem parar em um alvo
         Vertice verticeDestino = destino == null ? null
                 : encontraVertice(destino).orElseThrow(
                         () -> new IllegalArgumentException("Vertice " + destino + " não encontrado."));
@@ -399,7 +315,6 @@ public class Grafo {
             List<Vertice> adjacenciasOrdenadas = adjacencias.stream().sorted(Comparator.comparing(Vertice::getNome))
                     .toList();
 
-            // Primeiro vizinho ainda não visitado (em ordem alfabética)
             Optional<Vertice> proximo = adjacenciasOrdenadas.stream().filter(a -> !visitados.contains(a)).findFirst();
 
             if (proximo.isPresent()) {
@@ -416,12 +331,8 @@ public class Grafo {
         return visitados.stream().map(Vertice::getNome).toList();
     }
 
-    /**
-     * DFS RECURSIVO - Busca em Profundidade por recursão.
-     * Usado na Missão 5 para encontrar componentes conexos.
-     */
+
     public List<String> dfsRecursivo(String origem, String destino, List<Vertice> visitados) {
-        // Se visitados for null, cria lista nova (primeira chamada)
         final List<Vertice> visitadosAtual = visitados != null ? visitados : new ArrayList<>();
 
         Vertice v = encontraVertice(origem).orElseThrow(
@@ -432,7 +343,6 @@ public class Grafo {
             return visitadosAtual.stream().map(Vertice::getNome).toList();
         }
 
-        // Para cada vizinho não visitado, chama recursivamente
         for (Vertice adj : v.getAdjacencias()) {
             if (visitadosAtual.contains(adj)) {
                 continue; // já visitado, pula
@@ -440,7 +350,6 @@ public class Grafo {
 
             dfsRecursivo(adj.getNome(), destino, visitadosAtual);
 
-            // Se encontrou o destino em algum ramo, retorna
             if (destino != null && visitadosAtual.stream().anyMatch(x -> x.getNome().equals(destino))) {
                 return visitadosAtual.stream().map(Vertice::getNome).toList();
             }
@@ -449,10 +358,7 @@ public class Grafo {
         return visitadosAtual.stream().map(Vertice::getNome).toList();
     }
 
-    /**
-     * Calcula o comprimento (custo) de um caminho informado como sequência de nomes.
-     * Em grafos não-ponderados, retorna a quantidade de arestas.
-     */
+
     public int encontraComprimentoCaminho(String... caminho) {
         if (!ePonderado) {
             return caminho.length - 1;
@@ -480,7 +386,6 @@ public class Grafo {
         return comprimento;
     }
 
-    /** Verifica se o grafo é conexo (todos os vértices alcançáveis). */
     public boolean eConexo() {
         for (Vertice v : vertices)
             if (v.getInDegree() == 0 || v.getOutDegree() == 0) {
@@ -496,7 +401,6 @@ public class Grafo {
         return true;
     }
 
-    /** Versão simplificada da verificação de conexidade usando streams. */
     public boolean eConexoSimplificado() {
         if (vertices.stream().anyMatch(v -> v.getInDegree() == 0 || v.getOutDegree() == 0)) {
             return false;
@@ -504,10 +408,7 @@ public class Grafo {
         return vertices.stream().noneMatch(v -> dfsIterativo(v.getNome(), null).size() < vertices.size());
     }
 
-    /**
-     * GREEDY SEARCH - Busca gulosa pelo menor peso em cada passo.
-     * Não garante caminho ótimo global (diferente do Dijkstra).
-     */
+
     public List<String> greedySearch(String nomeVerticeOrigem, String nomeVerticeDestino) {
         List<Vertice> verticesVisitados = new ArrayList<>();
         int comprimentoCaminho = 0;
@@ -527,7 +428,6 @@ public class Grafo {
                 return null;
             }
 
-            // Coleta arestas para vizinhos ainda não visitados
             List<Aresta> arestasVizinhas = new ArrayList<>();
             for (Vertice vizinho : adjacencias) {
                 if (!verticesVisitados.contains(vizinho)) {
@@ -540,7 +440,6 @@ public class Grafo {
                 return null;
             }
 
-            // Escolhe gulosamente a aresta de menor peso
             Aresta melhorAresta = arestasVizinhas.stream()
                     .min(Comparator.comparing(Aresta::getPeso))
                     .orElseThrow();
@@ -563,10 +462,7 @@ public class Grafo {
         return nomesVisitados;
     }
 
-    /**
-     * Retorna as arestas que conectam dois vértices vizinhos.
-     * Considera direção em grafos não-direcionados.
-     */
+
     private List<Aresta> obtemArestasParaVizinho(Vertice atual, Vertice vizinho) {
         return arestas.stream()
                 .filter(a -> (a.getVerticeOrigem().equals(atual) && a.getVerticeDestino().equals(vizinho)) ||
@@ -574,12 +470,10 @@ public class Grafo {
                 .toList();
     }
 
-    /** Retorna o outro extremo da aresta (o que não é o vértice informado). */
     private Vertice obtemVerticeOposto(Aresta aresta, Vertice vertice) {
         return aresta.getVerticeOrigem().equals(vertice) ? aresta.getVerticeDestino() : aresta.getVerticeOrigem();
     }
 
-    /** Representação textual completa do grafo. */
     @Override
     public String toString() {
         return """
