@@ -1,4 +1,3 @@
-// Pacote analyzer: análises e recomendações sobre amizades
 package analyzer;
 
 import modelo.Grafo;
@@ -15,17 +14,11 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-/**
- * Motor de análises da rede de amizades.
- * A partir das conexões entre usuários, lista amigos, sugere novas conexões,
- * calcula a distância em passos (BFS) e a rota de maior afinidade (Dijkstra).
- */
+
 public class LinkedInAnalyzer {
 
-    // Grafo de amizades recebido no construtor
     private final Grafo grafo;
 
-    /** Recebe o grafo de amizades para realizar as análises. */
     public LinkedInAnalyzer(Grafo grafo) {
         if (grafo == null) {
             throw new IllegalArgumentException("O grafo não pode ser nulo.");
@@ -33,7 +26,6 @@ public class LinkedInAnalyzer {
         this.grafo = grafo;
     }
 
-    /** Lista os amigos diretos (1º grau) do usuário, em ordem alfabética. */
     public List<String> listarAmigos(String nome) {
         Vertice usuario = buscarUsuario(nome);
         List<String> amigos = new ArrayList<>();
@@ -44,7 +36,6 @@ public class LinkedInAnalyzer {
         return amigos;
     }
 
-    /** Lista todos os perfis cadastrados na rede, em ordem alfabética. */
     public List<String> listarPerfis() {
         List<String> perfis = new ArrayList<>();
         for (Vertice vertice : grafo.getVertices()) {
@@ -54,11 +45,7 @@ public class LinkedInAnalyzer {
         return perfis;
     }
 
-    /**
-     * Sugestão de conexões a partir das amizades existentes.
-     * Encontra pessoas a 2 passos (amigos de amigos) que ainda não são amigo direto.
-     * Ordena por quantidade de amigos em comum (decrescente).
-     */
+
     public List<SugestaoConexao> sugerirConexoes(String nome) {
         Vertice usuario = buscarUsuario(nome);
         Set<Vertice> amigosDiretos = new HashSet<>(usuario.getAdjacencias());
@@ -99,17 +86,12 @@ public class LinkedInAnalyzer {
         return sugestoes;
     }
 
-    /**
-     * Retorna o grau de separação (número de passos de amizade) entre duas pessoas.
-     * Usa BFS; retorna -1 se não houver caminho.
-     */
+
     public int grauDeSeparacao(String origem, String destino) {
         return caminhoEmPassos(origem, destino).getPassos();
     }
 
-    /**
-     * BFS que retorna o caminho de amizades e o número de passos entre duas pessoas.
-     */
+
     public ResultadoCaminho caminhoEmPassos(String origem, String destino) {
         Vertice verticeOrigem = buscarUsuario(origem);
         Vertice verticeDestino = buscarUsuario(destino);
@@ -159,10 +141,7 @@ public class LinkedInAnalyzer {
         return new ResultadoCaminho(caminho, distancias.get(verticeDestino));
     }
 
-    /**
-     * Rota de maior afinidade: menor soma de pesos entre duas pessoas.
-     * Delega ao Dijkstra implementado na classe Grafo.
-     */
+
     public ResultadoRota rotaDeMaiorAfinidade(String origem, String destino) {
         return grafo.menorCaminhoPonderado(origem, destino);
     }
