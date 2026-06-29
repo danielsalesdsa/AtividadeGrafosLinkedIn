@@ -114,14 +114,14 @@ public class Main {
         List<String> amigos = analyzer.listarAmigos(usuario);
 
         if (amigos.isEmpty()) {
-            println("  Voce ainda nao tem amizades cadastradas.");
+            println("  Voce ainda nao tem conexoes cadastradas.");
             return;
         }
 
         for (int i = 0; i < amigos.size(); i++) {
             println("  " + (i + 1) + ". " + amigos.get(i));
         }
-        println("\nTotal: " + amigos.size() + " amigo(s).");
+        println("\nTotal: " + amigos.size() + " conexao(oes).");
     }
 
     private static void exibirSugestoes(LinkedInAnalyzer analyzer, String usuario) {
@@ -169,6 +169,7 @@ public class Main {
 
     private static void consultarRotaPonderada(LinkedInAnalyzer analyzer, String usuario) {
         secao("ROTA DE MAIOR AFINIDADE - " + usuario);
+        println("Menor custo na soma dos pesos = maior afinidade no caminho.\n");
         print("Ate qual perfil? ");
         String destino = ENTRADA.nextLine().trim();
 
@@ -204,7 +205,7 @@ public class Main {
         linhaVazia();
         linhaDupla();
         centralizar("LINKEDIN ANALYZER");
-        centralizar("Rede de Amizades");
+        centralizar("Rede de Conexoes");
         linhaDupla();
         linhaVazia();
     }

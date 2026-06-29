@@ -124,6 +124,23 @@ public class Grafo {
         return vertices;
     }
 
+    /** Retorna o peso (afinidade) da conexão entre dois perfis vizinhos. */
+    public int pesoDaConexao(String origem, String destino) {
+        Vertice v1 = encontraVertice(origem).orElseThrow(
+                () -> new IllegalArgumentException("Vertice " + origem + " não encontrado."));
+        Vertice v2 = encontraVertice(destino).orElseThrow(
+                () -> new IllegalArgumentException("Vertice " + destino + " não encontrado."));
+
+        List<Aresta> arestasVizinhas = obtemArestasParaVizinho(v1, v2);
+        if (arestasVizinhas.isEmpty()) {
+            throw new IllegalArgumentException("Não há conexão entre " + origem + " e " + destino + ".");
+        }
+
+        Aresta aresta = arestasVizinhas.stream()
+                .min(Comparator.comparing(Aresta::getPeso))
+                .orElseThrow();
+        return aresta.getPeso() != null ? aresta.getPeso() : 0;
+    }
 
     public ResultadoRota menorCaminhoPonderado(String origem, String destino) {
         if (!ePonderado) {

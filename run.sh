@@ -102,9 +102,9 @@ echo "Compilando..."
 rm -rf out
 mkdir -p out
 
-mapfile -d '' -t SOURCES < <(find src -name '*.java' -print0)
+mapfile -d '' -t SOURCES < <(find trabalhografos/src -name '*.java' -print0)
 if [[ "${#SOURCES[@]}" -eq 0 ]]; then
-    echo "Erro: nenhum arquivo .java em src/"
+    echo "Erro: nenhum arquivo .java em trabalhografos/src/"
     exit 1
 fi
 

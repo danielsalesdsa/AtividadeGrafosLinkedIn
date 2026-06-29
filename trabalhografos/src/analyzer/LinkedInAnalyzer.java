@@ -30,7 +30,8 @@ public class LinkedInAnalyzer {
         Vertice usuario = buscarUsuario(nome);
         List<String> amigos = new ArrayList<>();
         for (Vertice amigo : usuario.getAdjacencias()) {
-            amigos.add(amigo.getNome());
+            int peso = grafo.pesoDaConexao(nome, amigo.getNome());
+            amigos.add(amigo.getNome() + " (afinidade: " + peso + ")");
         }
         amigos.sort(String::compareToIgnoreCase);
         return amigos;

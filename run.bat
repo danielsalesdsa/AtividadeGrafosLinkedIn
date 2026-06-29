@@ -23,7 +23,7 @@ echo Compilando...
 if exist out rmdir /s /q out
 mkdir out
 
-dir /s /b src\*.java > sources.txt
+dir /s /b trabalhografos\src\*.java > sources.txt
 "%JAVAC%" -encoding UTF-8 -d out @sources.txt
 if errorlevel 1 (
     del sources.txt 2>nul
